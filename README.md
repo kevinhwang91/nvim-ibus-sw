@@ -71,3 +71,6 @@ I assume that principle of vim-multiple-cursors will often switch insert and nor
 Anyway, I suggest you use [vim-visual-multi](https://github.com/mg979/vim-visual-multi) instead of [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors), faster and have other awesome futures.
 
 Using vim-visual-multi, It doesn't use hook function like vim-multiple-cursors anymore!!!
+
+## Demonstration
+![image](./vim-ibus-sw.gif)
