@@ -11,7 +11,7 @@ Restore prev ibus input status after entering insert mode.
 
 ---
 
-## Instalation
+## Installation
 
 Use your plugin manager like [Vim-plug](https://github.com/junegunn/vim-plug)
 
@@ -27,19 +27,19 @@ Then restart vim and run `:PluginInstall` to install.
 
 ## Principle
 
-If you use Desktop isn't Gnome, the plugin switch keyboard input using raw 'ibus engine' command.  
-This bring a bug using 'Allow different sources for each window' option in input settings becasue every progress has a session fragment to save the input status.
+If you use Desktop isn't Gnome, the plugin switch keyboard input using raw 'ibus engine' command.
 
-Raw 'ibus engine' can't change this session. Therefore, When you Focus Lost vim window and return back latter, Gnome Desktop will restore the session for input status.
+This brings a bug using 'Allow different sources for each window' option in input settings becasue every progress has a session fragment to save the input status.
+
+Raw 'ibus engine' can't change this session. Therefore, When you Focus Lost vim window and return back latter, Gnome Desktop will restore the session for raw input status.
 
 However, I use 'FocusGained' action in vim to restore the normal status by 'ibus engine', It solves the single vim wndows problem, but if you using vim inside tmux, switch to tmux other pane and then focus lost tmux, it will lead to the lastest pane become insert mode input status because of the unchanged session.
 
 Using Gnome Desktop which default keyboard input is ibus. Switching input by 'Gdbus', which can change the session, it seem no problem any more.
 
-So using 'Gdbus' is the first choose.
+So using 'Gdbus' is the first choice.
 
 ---
-
 
 ## Setup
 
@@ -68,7 +68,7 @@ I assume that principle of vim-multiple-cursors will often switch insert and nor
 
 ### Suggest
 
-Anyway, I suggest you use [vim-visual-multi](https://github.com/mg979/vim-visual-multi) instead of [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors), faster and have other awesome futures.
+Anyway, I suggest you use [vim-visual-multi](https://github.com/mg979/vim-visual-multi) instead of [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors), faster and have other awesome features.
 
 Using vim-visual-multi, It doesn't use hook function like vim-multiple-cursors anymore!!!
 
