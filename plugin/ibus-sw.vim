@@ -5,10 +5,10 @@ endif
 let s:ibus_input_trigger=1
 let s:is_gnome=($DESKTOP_SESSION=='gnome')
 if s:is_gnome
-    let s:input_size=substitute(system('gdbus call -e -d org.gnome.Shell -o /org/gnome/Shell -m org.gnome.Shell.Eval "Object.keys(imports.ui.status.keyboard.getInputSourceManager().inputSources).length"'),'.*\v(\d).*', '\=submatch(1)', '')
-    if s:input_size<2
-        finish
-    endif
+    " let s:input_size=substitute(system('gdbus call -e -d org.gnome.Shell -o /org/gnome/Shell -m org.gnome.Shell.Eval "Object.keys(imports.ui.status.keyboard.getInputSourceManager().inputSources).length"'),'.*\v(\d).*', '\=submatch(1)', '')
+    " if s:input_size<2
+        " finish
+    " endif
     if !exists("g:default_input_index")
         let g:default_input_index=0
     endif
