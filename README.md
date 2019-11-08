@@ -4,6 +4,8 @@
 
 note: released version without debug messages.
 
+---
+
 This plugin is for Vim users that use Ibus to be eased to handle multiple input methods when changing between normal and insert mode(eg. English and Chinese).
 
 The method implemented is very simple.
@@ -64,10 +66,10 @@ Without the below hook function, the CPU load is high and (neo)vim became very v
 
 ```vim
 function! Multiple_cursors_before()
-    call Ibus_input_trigger_disable()
+    call is#input_trigger_disable()
 endfunction
 function! Multiple_cursors_after()
-    call Ibus_input_trigger_enable()
+    call is#input_trigger_enable()
 endfunction
 ```
 I pressume that the principle of vim-multiple-cursors will often switch insert and normal mode causing this problem, so its author leave this hook and other plugins can use this hook to solve performance.
