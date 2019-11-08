@@ -1,77 +1,110 @@
+if exists('g:loaded_ibus_sw')
+  finish
+endif
+
+let g:loaded_ibus_sw = 1
+
 if !executable('ibus')
     finish
 endif
 
+if !get(g:, 'ibus_sw_enable', 1)
+    finish
+end
+
 let s:ibus_input_trigger=1
-let s:is_gnome=($DESKTOP_SESSION=='gnome')
-if s:is_gnome
-    " let s:input_size=substitute(system('gdbus call -e -d org.gnome.Shell -o /org/gnome/Shell -m org.gnome.Shell.Eval "Object.keys(imports.ui.status.keyboard.getInputSourceManager().inputSources).length"'),'.*\v(\d).*', '\=submatch(1)', '')
-    " if s:input_size<2
-        " finish
-    " endif
-    if !exists("g:default_input_index")
-        let g:default_input_index=0
+let s:init_bin = expand("<sfile>:h:h") . "/bin/init.sh"
+
+function! s:init(ret_dict)
+    let s:ret_code = a:ret_dict["ret_code"]
+    if s:ret_code
+        " no need to initialize ibus-sw, such as size of input method < 2
+        return
     endif
-    let s:normal_input_index=g:default_input_index
-    let s:insert_input_index=s:normal_input_index
-    let s:dbus_ctrl='!gdbus call -e -d org.gnome.Shell -o /org/gnome/Shell -m org.gnome.Shell.Eval '
-    func! s:store_insert()
-        let s:insert_input_index=substitute(system('gdbus call -e -d org.gnome.Shell -o /org/gnome/Shell -m org.gnome.Shell.Eval "imports.ui.status.keyboard.getInputSourceManager().currentSource.index"'), '.*\v(\d).*', '\=submatch(1)', '')
-    endfunc
-    func! s:restore_normal()
-        if s:insert_input_index!=s:normal_input_index
-            silent execute s:dbus_ctrl . '"imports.ui.status.keyboard.getInputSourceManager().inputSources['.g:default_input_index.'].activate()"'
+    let s:itype = a:ret_dict["itype"]
+    let s:bin = a:ret_dict["bin"]
+    let s:current_input = a:ret_dict["current_input"]
+    let s:normal_cache = s:current_input
+    let s:insert_cache = s:current_input
+    augroup ibus_input
+        au!
+        autocmd InsertLeave * if s:ibus_input_trigger | :call s:restore_normal()
+        autocmd InsertEnter * if s:ibus_input_trigger | :call s:restore_insert()
+        if s:itype == 'engine'
+            autocmd FocusGained * if s:insert_cache != s:normal_cache | if mode()!='i'| sleep 200m | :call s:restore_normal()
         endif
-    endfunc
+    augroup END
+endfunction
 
-    func! s:restore_insert()
-        if s:insert_input_index!=s:normal_input_index
-            silent execute s:dbus_ctrl . '"imports.ui.status.keyboard.getInputSourceManager().inputSources['.s:insert_input_index.'].activate()"'
-        endif
-    endfunc
-else
-    if !exists("g:defaul_input_name")
-        let g:defaul_input_name='xkb:us::eng'
+" neovim asynchronous callback function
+" ======================================================
+function! s:nvim_init(job_id, data, event)
+    let s:ret_dict = eval(a:data[0])
+    call s:init(s:ret_dict)
+endfunction
+
+function! s:nvim_set_insert_cache(job_id, data, event)
+    let s:insert_cache = a:data[0]
+endfunction
+
+function! s:nvim_set_normal_cache(job_id, data, event)
+    let s:normal_cache = a:data[0]
+endfunction
+" ======================================================
+
+" vim asynchronous callback function
+" ======================================================
+function! s:vim_init(channel, data)
+    let s:ret_dict = eval(a:data)
+    call s:init(s:ret_dict)
+endfunction
+
+function! s:vim_set_insert_cache(channel, data)
+    let s:insert_cache = a:data
+endfunction
+
+function! s:vim_set_normal_cache(channel, data)
+    let s:normal_cache = a:data
+endfunction
+" ======================================================
+
+function! s:restore_normal()
+    if exists('*jobstart')
+        call jobstart([s:bin, 'set_input', s:normal_cache], {'on_stdout': function('s:nvim_set_insert_cache'), 'stdout_buffered': 1})
+    elseif exists('*job_start')
+        call job_start([s:bin, 'set_input', s:normal_cache], {'out_cb': function('s:vim_set_insert_cache')})
+    else
+        let s:insert_cache = system(s:bin . ' set_input ' . s:normal_cache)
     endif
-    let s:normal_input_name=g:defaul_input_name
-    let s:insert_input_name=s:normal_input_name
+endfunction
 
-    func! s:store_insert()
-        let s:insert_input_name=system('ibus engine')[:-2]
-    endfunc
+function! s:restore_insert()
+    if exists('*jobstart')
+        call jobstart([s:bin, 'set_input', s:insert_cache], {'on_stdout': function('s:nvim_set_normal_cache'), 'stdout_buffered': 1})
+    elseif exists('*job_start')
+        call job_start([s:bin, 'set_input', s:insert_cache], {'out_cb': function('s:vim_set_normal_cache')})
+    else
+        let s:normal_cache = system(s:bin . ' set_input ' . s:insert_cache)
+    endif
+endfunction
 
-    func! s:restore_normal()
-        if s:insert_input_name!=s:normal_input_name
-            silent execute "!ibus engine " . s:normal_input_name
-        endif
-    endfunc
+function! s:lazy_load()
+    if exists('*jobstart')
+        call jobstart(s:init_bin, {'on_stdout': function('s:nvim_init'), 'stdout_buffered': 1})
+    elseif exists('*job_start')
+        call job_start(s:init_bin, {'out_cb': function('s:vim_init')})
+    else
+        let s:ret_dict = eval(system(s:init_bin)[:-2])
+        call s:init(s:ret_dict)
+    endif
+endfunction
 
-    func! s:restore_insert()
-        if s:insert_input_name!=s:normal_input_name
-            silent execute "!ibus engine " . s:insert_input_name
-        endif
-    endfunc
-endif
+autocmd InsertEnter * ++once :call s:lazy_load()
 
-
-
-func! Ibus_input_trigger_enable()
+function! Ibus_input_trigger_enable()
     let s:ibus_input_trigger=1
-    call s:store_insert()
-    call s:restore_normal()
-endfunc
+endfunction
 
-func! Ibus_input_trigger_disable()
+function! Ibus_input_trigger_disable()
     let s:ibus_input_trigger=0
-    call s:restore_insert()
-endfunc
-
-augroup ibus_input
-    au!
-    autocmd InsertLeave * if s:ibus_input_trigger | :call s:store_insert() | :call s:restore_normal()
-    autocmd InsertEnter * if s:ibus_input_trigger | :call s:restore_insert()
-    if !s:is_gnome
-        autocmd FocusGained * if s:insert_input_name!=s:normal_input_name | if mode()!='i'| sleep 100m | :call s:restore_normal()
-    endif
-augroup END
-
+endfunction

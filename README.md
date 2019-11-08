@@ -1,13 +1,22 @@
 # vim-ibus-sw
 
-This plugin is for Vim users that use Ibus to handle multiple input methods when changing between
-normal and insert mode. (eg. English and Chinese)
+![image](./vim-ibus-sw.gif)
 
-The implemented method is very simple.
+note: released version without debug messages.
 
-Just save the ibus input status before leaving insert mode and then switch default normal status.
+This plugin is for Vim users that use Ibus to be eased to handle multiple input methods when changing between normal and insert mode(eg. English and Chinese).
 
-Restore previous ibus input status after entering insert mode.
+The method implemented is very simple.
+
+No matter in normal and insert mode, the input status must be cached, respectively, and restore the previous status of another mode.
+
+Such as updating the cache with the current input status before leaving insert mode and then switching to the input status cached previous at normal mode while entering normal mode.
+
+Features:
+
+* Auto cache input status and restore.
+* Switch input status asynchronously.
+* Lazy Load to reduce startup time.
 
 ---
 
@@ -15,7 +24,7 @@ Restore previous ibus input status after entering insert mode.
 
 Use your plugin manager like [Vim-plug](https://github.com/junegunn/vim-plug)
 
-Put this in your `~/.vimrc` or `~/.config/nvim/init.vim` if you using neovim.
+Put below code in your `~/.vimrc` or `~/.config/nvim/init.vim`.
 
 ```vim
 Plug 'kevinhwang91/vim-ibus-sw'
@@ -27,31 +36,31 @@ Then restart vim and run `:PluginInstall` to install.
 
 ## Principle
 
-If you use the Desktop environment isn't Gnome, the plugin switch keyboard input using the raw 'ibus engine' command.
+My Linux Desktop Environment is Gnome, only tested in Gnome.
 
-This brings a bug using 'Allow different sources for each window' option in input settings because every progress has a session fragment to save the input status.
+If you use the Desktop Environment is not Gnome, the plugin switch input method by the 'ibus engine' command.
 
-Raw 'ibus engine' can't change this session. Therefore, When you Focus Lost vim window and return back later, Gnome Desktop will restore the session for raw input status.
+Using 'ibus engine' brings a bug using 'Allow different sources for each window' option in input settings in Gnome Desktop Environment because every progress has a session to save the input status, and restore the data from the session when you refocus on the application.
 
-However, I use 'FocusGained' action in vim to restore the normal status by 'ibus engine', It solves the single vim window problem, but if you using vim inside tmux, switch to tmux other panes and then focus lost tmux, it will lead to the lastest pane become insert mode input status because of the unchanged session.
+'ibus engine' can't change this session. Therefore, when you focus lost (neo)vim window and return back later, Gnome Desktop will restore the session for raw input status.
 
-Using Gnome Desktop environment which default keyboard input is ibus. Switching input by 'Gdbus', which can change the session, it seems no problem anymore.
+So I use 'FocusGained'(vim may not work) action in (neo)vim to restore the input status by 'ibus engine', It solves the single (neo)vim window problem. If you running (neo)vim inside tmux, and switching to other panes of tmux and then focus lost tmux, it will lead to the lastest pane become input status at insert mode because of the unchanged session of tmux.
 
-So using 'Gdbus' is the first choice.
+Gnome Desktop Environment whose default input method is ibus. Switching input status by 'dbus'(dbus is faster than gdbus for switching input status), which can change the session of applications, it seems no problem anymore.
+
+So using 'dbus' is the first choice rather than 'ibus engine'.
+
+The lasted version of neovim and vim both support the async job, 'vim-ibus-sw' is compatible with neovim and vim. If the older vim doesn't support the async job, it will run system call synchronously ten times slower than the async job. 
 
 ---
 
-## Setup
+## Configuration
 
-1. Using Gnome  
-You have the option to replace your normal input index by 'g:default_input_index', default is 0, your first input.  
-  
-2. Without using Gnome  
-You have option to replace your normal input engine by 'g:ibus_default_engine', default is 'xkb:us:eng'.
+If you want to disable the plugin, set `let g:ibus_sw_enable = 0`.
 
 When you use [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors), please appending below vim-multiple-cursors hook function in vim or neovim config file.
 
-Without the below hook function, the CPU load high and vim became very very slow when entering multiple edit mode using vim-multiple-cursors.
+Without the below hook function, the CPU load is high and (neo)vim became very very slow when entering multiple edit mode using vim-multiple-cursors.
 
 ```vim
 function! Multiple_cursors_before()
@@ -61,16 +70,10 @@ function! Multiple_cursors_after()
     call Ibus_input_trigger_enable()
 endfunction
 ```
+I pressume that the principle of vim-multiple-cursors will often switch insert and normal mode causing this problem, so its author leave this hook and other plugins can use this hook to solve performance.
 
-I assume that the principle of vim-multiple-cursors will often switch insert and normal mode causing this problem.
-
-(I hadn't research vim-multiple-cursors source code, but its author leaves this hook and many other plugins use it to solve this problem)
-
-### Suggest
+### Suggestion
 
 Anyway, I suggest you use [vim-visual-multi](https://github.com/mg979/vim-visual-multi) instead of [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors), faster and have other awesome features.
 
-Using vim-visual-multi, It doesn't use hook function like vim-multiple-cursors anymore!!!
-
-## Demonstration
-![image](./vim-ibus-sw.gif)
+Using vim-visual-multi, It doesn't need hook function like vim-multiple-cursors anymore!!!
