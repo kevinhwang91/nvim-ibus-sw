@@ -14,13 +14,19 @@ No matter in normal and insert mode, the input status must be cached, respective
 
 Such as updating the cache with the current input status before leaving insert mode and then switching to the input status cached previous at normal mode while entering normal mode.
 
-Features:
+## Features:
 
 * Auto cache input status and restore.
 * Switch input status asynchronously.
 * Lazy Load to reduce startup time.
 
+> The lasted version of neovim and vim both support the async job, 'vim-ibus-sw' is compatible with them. If the older vim doesn't support the async job, it will run system call synchronously ten times slower than the async job. 
+
 ---
+
+## Requirement:
+* [ibus](https://github.com/ibus/ibus)
+* [vim](https://github.com/vim/vim) or [neovim](https://github.com/neovim/neovim)
 
 ## Installation
 
@@ -38,11 +44,9 @@ Then restart vim and run `:PluginInstall` to install.
 
 ## Principle
 
-My Linux Desktop Environment is Gnome, only tested in Gnome.
+**If your Desktop Environment is not Gnome, the plugin switch input method by the 'ibus engine' command. When switching input method, tray icon of ibus change nothing.**
 
-If you use the Desktop Environment is not Gnome, the plugin switch input method by the 'ibus engine' command.
-
-Using 'ibus engine' brings a bug using 'Allow different sources for each window' option in input settings in Gnome Desktop Environment because every progress has a session to save the input status, and restore the data from the session when you refocus on the application.
+Using 'ibus engine' brings a bug when using 'Allow different sources for each window' option in input settings in Gnome Desktop Environment, because every progress has a session to save the input status, and restore the data from the session when you refocus on the application.
 
 'ibus engine' can't change this session. Therefore, when you focus lost (neo)vim window and return back later, Gnome Desktop will restore the session for raw input status.
 
@@ -51,8 +55,6 @@ So I use 'FocusGained'(vim may not work) action in (neo)vim to restore the input
 Gnome Desktop Environment whose default input method is ibus. Switching input status by 'dbus'(dbus is faster than gdbus for switching input status), which can change the session of applications, it seems no problem anymore.
 
 So using 'dbus' is the first choice rather than 'ibus engine'.
-
-The lasted version of neovim and vim both support the async job, 'vim-ibus-sw' is compatible with neovim and vim. If the older vim doesn't support the async job, it will run system call synchronously ten times slower than the async job. 
 
 ---
 
