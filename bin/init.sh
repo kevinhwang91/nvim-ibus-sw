@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 
-work_dir=$(cd -P "$(dirname $0)" && pwd -P)
+if [[ ! -x $(command -v ibus) ]]; then
+    exit 1
+fi
 
+work_dir=$(cd -P "$(dirname $0)" && pwd -P)
 if [[ $XDG_CURRENT_DESKTOP == "GNOME" && -x $(command -v dbus-send) ]]; then
     itype="dbus"
     bin="$work_dir/dbus_ibus_switch.sh"
