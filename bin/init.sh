@@ -2,7 +2,7 @@
 
 work_dir=$(cd -P "$(dirname $0)" && pwd -P)
 
-if [[ $DESKTOP_SESSION == "gnome" && -x $(command -v dbus-send) ]]; then
+if [[ $XDG_CURRENT_DESKTOP == "GNOME" && -x $(command -v dbus-send) ]]; then
     itype="dbus"
     bin="$work_dir/dbus_ibus_switch.sh"
 else
