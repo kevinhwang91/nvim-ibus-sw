@@ -1,7 +1,7 @@
 let s:input_trigger=1
 let s:init_bin = expand('<sfile>:h:h') . '/bin/init.sh'
 
-function is#init(ret_dict) dict
+function is#init(ret_dict) abort
     let d = a:ret_dict
     if !has_key(d, 'itype') || empty(d.itype) ||
                 \ !has_key(d, 'current_input') || empty(d.current_input) ||
@@ -24,7 +24,7 @@ function is#init(ret_dict) dict
     augroup END
 endfunction
 
-function is#restore_normal() dict
+function is#restore_normal() abort
     if exists('*jobstart')
         call jobstart([s:bin, 'set_input', s:normal_cache], {
                     \ 'on_stdout': {j, d, e -> execute('let s:insert_cache = d[0]')},
@@ -39,7 +39,7 @@ function is#restore_normal() dict
     endif
 endfunction
 
-function is#restore_insert() dict
+function is#restore_insert() abort
     if exists('*jobstart')
         call jobstart([s:bin, 'set_input', s:insert_cache], {
                     \ 'on_stdout': {j, d, e -> execute('let s:normal_cache = d[0]')},
@@ -54,7 +54,7 @@ function is#restore_insert() dict
     endif
 endfunction
 
-function is#lazy_load() dict
+function is#lazy_load() abort
     if exists('*jobstart')
         call jobstart(s:init_bin, {
                     \ 'on_stdout': {j, d, e -> call(function('is#init'), [eval(d[0])])},
