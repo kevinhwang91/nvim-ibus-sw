@@ -1,6 +1,8 @@
 # vim-ibus-sw
 
-![image](./vim-ibus-sw.gif)
+<p align="center">
+  <img width="480px" src="https://user-images.githubusercontent.com/17562139/79073844-5a40b300-7d1b-11ea-93ba-9513e651b9ef.gif">
+</p>
 
 note: released version without debug messages.
 
@@ -16,16 +18,16 @@ Such as updating the cache with the current input status before leaving insert m
 
 ## Features:
 
-* Auto cache input status and restore.
-* Switch input status asynchronously.
-* Lazy Load to reduce startup time.
+- Auto cache input status and restore.
+- Switch input status asynchronously.
+- Lazy Load to reduce startup time.
 
-> The lasted version of neovim and vim both support the async job, 'vim-ibus-sw' is compatible with them. If the older vim doesn't support the async job, it will run system call synchronously ten times slower than the async job. 
+> The lasted version of neovim and vim both support the async job, 'vim-ibus-sw' is compatible with them.
 
 ## Requirements:
 
-* [ibus](https://github.com/ibus/ibus)
-* [vim](https://github.com/vim/vim) or [neovim](https://github.com/neovim/neovim)
+- [ibus](https://github.com/ibus/ibus)
+- [vim](https://github.com/vim/vim) or [neovim](https://github.com/neovim/neovim)
 
 ## Installation
 
@@ -37,7 +39,7 @@ Put below code in your `~/.vimrc` or `~/.config/nvim/init.vim`.
 Plug 'kevinhwang91/vim-ibus-sw'
 ```
 
-Then restart (neo)vim and run `:PluginInstall` to install.
+Then restart (neo)vim and run `:PlugInstall` to install.
 
 ## Configuration
 
@@ -55,6 +57,7 @@ function! Multiple_cursors_after()
     call is#input_trigger_enable()
 endfunction
 ```
+
 I pressume that the principle of vim-multiple-cursors will often switch insert and normal mode causing this problem, so its author leave this hook and other plugins can use this hook to solve performance.
 
 ## Suggestion

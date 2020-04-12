@@ -1,11 +1,11 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 if [[ ! -x $(command -v ibus) || $XDG_SESSION_TYPE == tty ]]; then
     echo "{'ret_code': 1}"
     return
 fi
 
-work_dir=$(cd -P $(dirname $0) && pwd -P)
+work_dir=$(cd -P "$(dirname "$0")" && pwd -P)
 if [[ $XDG_CURRENT_DESKTOP == GNOME && -x $(command -v dbus-send) ]]; then
     itype="dbus"
     bin="$work_dir/dbus_ibus_switch.sh"

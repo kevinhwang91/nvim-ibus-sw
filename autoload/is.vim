@@ -30,12 +30,10 @@ function is#restore_normal() abort
                     \ 'on_stdout': {j, d, e -> execute('let s:insert_cache = d[0]')},
                     \ 'stdout_buffered': 1
                     \ })
-    elseif exists('*job_start')
+    else
         call job_start([s:bin, 'set_input', s:normal_cache], {
                     \ 'out_cb': {c, d -> execute('let s:insert_cache = d')}
                     \ })
-    else
-        let s:insert_cache = system(s:bin . ' set_input ' . s:normal_cache)
     endif
 endfunction
 
@@ -45,12 +43,10 @@ function is#restore_insert() abort
                     \ 'on_stdout': {j, d, e -> execute('let s:normal_cache = d[0]')},
                     \ 'stdout_buffered': 1
                     \ })
-    elseif exists('*job_start')
+    else
         call job_start([s:bin, 'set_input', s:insert_cache], {
                     \ 'out_cb': {c, d -> execute('let s:normal_cache = d')}
                     \ })
-    else
-        let s:normal_cache = system(s:bin . ' set_input ' . s:insert_cache)
     endif
 endfunction
 
@@ -65,8 +61,7 @@ function is#lazy_load() abort
                     \ 'out_cb': {c, d -> call(function('is#init'), [eval(d)])}
                     \ })
     else
-        let s:ret_dict = eval(system(s:init_bin)[:-2])
-        call init(s:ret_dict)
+        echoerr 'job start is not supported, fail to initialize.'
     endif
 endfunction
 
