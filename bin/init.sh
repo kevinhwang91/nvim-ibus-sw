@@ -7,10 +7,10 @@ fi
 
 work_dir=$(cd -P "$(dirname "$0")" && pwd -P)
 if [[ $XDG_CURRENT_DESKTOP == GNOME && -x $(command -v dbus-send) ]]; then
-    itype="dbus"
+    itype='dbus'
     bin="$work_dir/dbus_ibus_switch.sh"
 else
-    itype="engine"
+    itype='engine'
     bin="$work_dir/ibus_engine_switch.sh"
 fi
 

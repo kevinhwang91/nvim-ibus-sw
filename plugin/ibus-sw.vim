@@ -1,5 +1,5 @@
 if exists('g:loaded_ibus_sw')
-  finish
+    finish
 endif
 
 let g:loaded_ibus_sw = 1

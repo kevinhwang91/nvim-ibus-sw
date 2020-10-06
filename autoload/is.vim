@@ -1,4 +1,4 @@
-let s:input_trigger=1
+let s:input_trigger = 1
 let s:init_bin = expand('<sfile>:h:h') . '/bin/init.sh'
 
 function is#init(ret_dict) abort
@@ -13,7 +13,7 @@ function is#init(ret_dict) abort
     let s:bin = d.bin
     let s:normal_cache = d.current_input
     let s:insert_cache = d.current_input
-    augroup ibus_sw
+    augroup IbusSw
         au!
         autocmd InsertLeave * if s:input_trigger | call is#restore_normal() | endif
         autocmd InsertEnter * if s:input_trigger | call is#restore_insert() | endif
@@ -66,9 +66,9 @@ function is#lazy_load() abort
 endfunction
 
 function is#input_trigger_enable()
-    let s:input_trigger=1
+    let s:input_trigger = 1
 endfunction
 
 function is#input_trigger_disable()
-    let s:input_trigger=0
+    let s:input_trigger = 0
 endfunction
