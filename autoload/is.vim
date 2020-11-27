@@ -11,46 +11,60 @@ function is#init(ret_dict) abort
         return
     endif
     let s:bin = d.bin
-    let s:normal_cache = d.current_input
-    let s:insert_cache = d.current_input
+    let s:n_cache = d.current_input
+    let s:i_cache = d.current_input
+    " change input method using dbus will trigger FocusGained event
+    let s:focus_set = d.itype == 'dbus' && (has('nvim') || has('gui_running'))
     augroup IbusSw
-        au!
-        autocmd InsertLeave * if s:input_trigger | call is#restore_normal() | endif
-        autocmd InsertEnter * if s:input_trigger | call is#restore_insert() | endif
-        if d.itype == 'engine'
-            autocmd FocusGained * if s:insert_cache != s:normal_cache && mode() == 'n' |
-                        \ sleep 200m | call is#restore_normal() | endif
+        autocmd!
+        if s:focus_set
+            autocmd FocusGained * call <SID>update_input_cache()
         endif
+        autocmd InsertEnter * if s:input_trigger | call <SID>restore_input_method('i') | endif
+        autocmd InsertLeave * if s:input_trigger | call <SID>restore_input_method('n') | endif
     augroup END
 endfunction
 
-function is#restore_normal() abort
+function s:update_input_cache() abort
+    let mode = mode() == 'n' ? 'n' : 'i'
     if exists('*jobstart')
-        call jobstart([s:bin, 'set_input', s:normal_cache], {
-                    \ 'on_stdout': {j, d, e -> execute('let s:insert_cache = d[0]')},
+        call jobstart([s:bin, 'get_input'], {
+                    \ 'on_stdout': {j, d, e -> execute('let s:' . mode . '_cache = d[0]')},
                     \ 'stdout_buffered': 1
                     \ })
     else
-        call job_start([s:bin, 'set_input', s:normal_cache], {
-                    \ 'out_cb': {c, d -> execute('let s:insert_cache = d')}
+        call job_start([s:bin, 'get_input'], {
+                    \ 'out_cb': {c, d -> execute('let s:' . mode . '_cache = d')}
                     \ })
     endif
 endfunction
 
-function is#restore_insert() abort
-    if exists('*jobstart')
-        call jobstart([s:bin, 'set_input', s:insert_cache], {
-                    \ 'on_stdout': {j, d, e -> execute('let s:normal_cache = d[0]')},
-                    \ 'stdout_buffered': 1
-                    \ })
+function s:restore_input_method(mode) abort
+    let cache = a:mode == 'n' ? s:n_cache : s:i_cache
+    if s:focus_set
+        if s:i_cache != s:n_cache
+            if exists('*jobstart')
+                call jobstart([s:bin, 'set_input', cache])
+            else
+                call job_start([s:bin, 'set_input', cache])
+            endif
+        endif
     else
-        call job_start([s:bin, 'set_input', s:insert_cache], {
-                    \ 'out_cb': {c, d -> execute('let s:normal_cache = d')}
-                    \ })
+        let r_mode = a:mode == 'n' ? 'i' : 'n'
+        if exists('*jobstart')
+            call jobstart([s:bin, 'set_input', cache], {
+                        \ 'on_stdout': {j, d, e -> execute('let s:' . r_mode . '_cache = d[0]')},
+                        \ 'stdout_buffered': 1
+                        \ })
+        else
+            call job_start([s:bin, 'set_input', cache], {
+                        \ 'out_cb': {c, d -> execute('let s:' . r_mode . '_cache = d')}
+                        \ })
+        endif
     endif
 endfunction
 
-function is#lazy_load() abort
+function! is#lazy_load() abort
     if exists('*jobstart')
         call jobstart(s:init_bin, {
                     \ 'on_stdout': {j, d, e -> call(function('is#init'), [eval(d[0])])},
@@ -65,10 +79,10 @@ function is#lazy_load() abort
     endif
 endfunction
 
-function is#input_trigger_enable()
+function! is#input_trigger_enable()
     let s:input_trigger = 1
 endfunction
 
-function is#input_trigger_disable()
+function! is#input_trigger_disable()
     let s:input_trigger = 0
 endfunction

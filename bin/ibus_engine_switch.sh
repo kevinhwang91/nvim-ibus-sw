@@ -10,11 +10,11 @@ set_input() {
     if [[ $pre_input != "$1" ]]; then
         ibus engine $1
     fi
-    echo $pre_input
+    echo -n $pre_input
 }
 
 init() {
-    echo 0
+    echo -n 0
 }
 
 "$@"

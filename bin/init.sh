@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ ! -x $(command -v ibus) || $XDG_SESSION_TYPE == tty ]]; then
-    echo "{'ret_code': 1}"
+    echo -n "{'ret_code': 1}"
     return
 fi
 
@@ -16,4 +16,4 @@ fi
 
 current_input=$($bin get_input)
 ret_code=$($bin init)
-echo "{'itype': '$itype', 'bin': '$bin', 'current_input': '$current_input', 'ret_code': '$ret_code'}"
+echo -n "{'itype': '$itype', 'bin': '$bin', 'current_input': '$current_input', 'ret_code': '$ret_code'}"
