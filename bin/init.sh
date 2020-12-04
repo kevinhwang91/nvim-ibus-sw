@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-if [[ ! -x $(command -v ibus) || $XDG_SESSION_TYPE == tty ]]; then
+if [[ ! -x $(command -v ibus) || $XDG_SESSION_TYPE == tty || -z $XDG_CURRENT_DESKTOP ]]; then
     echo -n "{'ret_code': 1}"
-    return
+    exit 1
 fi
 
 work_dir=$(cd -P "$(dirname "$0")" && pwd -P)

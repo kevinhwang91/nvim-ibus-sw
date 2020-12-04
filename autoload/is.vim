@@ -10,6 +10,10 @@ function is#init(ret_dict) abort
         " no need to initialize ibus-sw, such as size of input method < 2
         return
     endif
+    if d.ret_code > 0
+        return
+    endif
+
     let s:bin = d.bin
     let s:n_cache = d.current_input
     let s:i_cache = d.current_input
