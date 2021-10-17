@@ -1,5 +1,6 @@
 let s:input_trigger = 1
 let s:init_bin = expand('<sfile>:h:h') . '/bin/init.sh'
+let s:is_nvim = 1
 
 function is#init(ret_dict) abort
     let d = a:ret_dict
@@ -31,7 +32,7 @@ endfunction
 
 function s:update_input_cache() abort
     let mode = mode() == 'n' ? 'n' : 'i'
-    if exists('*jobstart')
+    if s:is_nvim
         call jobstart([s:bin, 'get_input'], {
                     \ 'on_stdout': {j, d, e -> execute('let s:' . mode . '_cache = d[0]')},
                     \ 'stdout_buffered': 1
@@ -47,7 +48,7 @@ function s:restore_input_method(mode) abort
     let cache = a:mode == 'n' ? s:n_cache : s:i_cache
     if s:focus_set
         if s:i_cache != s:n_cache
-            if exists('*jobstart')
+            if s:is_nvim
                 call jobstart([s:bin, 'set_input', cache])
             else
                 call job_start([s:bin, 'set_input', cache])
@@ -55,7 +56,7 @@ function s:restore_input_method(mode) abort
         endif
     else
         let r_mode = a:mode == 'n' ? 'i' : 'n'
-        if exists('*jobstart')
+        if s:is_nvim
             call jobstart([s:bin, 'set_input', cache], {
                         \ 'on_stdout': {j, d, e -> execute('let s:' . r_mode . '_cache = d[0]')},
                         \ 'stdout_buffered': 1
@@ -74,10 +75,12 @@ function! is#lazy_load() abort
                     \ 'on_stdout': {j, d, e -> call(function('is#init'), [eval(d[0])])},
                     \ 'stdout_buffered': 1
                     \ })
+        let s:is_nvim = 1
     elseif exists('*job_start')
         call job_start(s:init_bin, {
                     \ 'out_cb': {c, d -> call(function('is#init'), [eval(d)])}
                     \ })
+        let s:is_nvim = 0
     else
         echoerr 'job start is not supported, fail to initialize.'
     endif
