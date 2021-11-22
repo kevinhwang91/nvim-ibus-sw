@@ -6,7 +6,10 @@ if [[ ! -x $(command -v ibus) || $XDG_SESSION_TYPE == tty || -z $XDG_CURRENT_DES
 fi
 
 work_dir=$(cd -P "$(dirname "$0")" && pwd -P)
-if [[ $XDG_CURRENT_DESKTOP == GNOME && -x $(command -v dbus-send) ]]; then
+if [[ $XDG_CURRENT_DESKTOP == GNOME && -x $(command -v gnome-shell) && $(
+    gnome-shell --version | awk
+    '{match($3, /[0-9]+\.[0-9]+/, m);exit m[0]<41}'
+) ]]; then
     itype='dbus'
     bin="$work_dir/dbus_ibus_switch.sh"
 else
