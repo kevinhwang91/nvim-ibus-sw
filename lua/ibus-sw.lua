@@ -26,7 +26,7 @@ function M.setup()
 end
 
 function M.initialize()
-    if vim.env.SSH_CONNECTION then
+    if vim.env.SSH_CONNECTION or vim.env.SUDO_USER then
         return
     end
     local engine = require('ibus-sw.engine')
